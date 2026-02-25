@@ -2,9 +2,15 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 
 export enum UserRole {
   ADMIN = 'admin',
-  PROJECT_MANAGER = 'project_manager',
+  CHEF_PROJET = 'chef_projet',
   TEAM_MEMBER = 'team_member',
   CLIENT = 'client',
+}
+
+export enum UserStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
 }
 
 @Entity('users')
@@ -26,6 +32,9 @@ export class User {
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.TEAM_MEMBER })
   role: UserRole;
+
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.PENDING })
+  status: UserStatus;
 
   @Column({ default: true })
   isActive: boolean;
