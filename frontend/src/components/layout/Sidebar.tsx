@@ -10,48 +10,132 @@ import {
   Bot, 
   BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  Shield,
+  Ticket
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 
-const menuItems = [
-  { 
-    label: 'Home',
-    items: [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    ]
-  },
-  {
-    label: 'Management',
-    items: [
-      { icon: FolderKanban, label: 'Projects', path: '/projects' },
-      { icon: Zap, label: 'Sprints', path: '/sprints' },
-      { icon: ListChecks, label: 'Backlog', path: '/backlog' },
-      { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
-    ]
-  },
-  {
-    label: 'People',
-    items: [
-      { icon: Users, label: 'Teams', path: '/teams' },
-      { icon: Palmtree, label: 'Congés', path: '/conges' },
-    ]
-  },
-  {
-    label: 'System',
-    items: [
-      { icon: Bell, label: 'Notifications', path: '/notifications' },
-      { icon: Bot, label: 'Aura AI', path: '/aura' },
-      { icon: BarChart3, label: 'Reports', path: '/reports' },
-    ]
-  },
-];
+// Define menu items per role
+const getMenuItems = (role: string) => {
+  const common = [
+    {
+      label: 'Home',
+      items: [
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+      ]
+    },
+  ];
+
+  const adminMenu = [
+    ...common,
+    {
+      label: 'Management',
+      items: [
+        { icon: Shield, label: 'User Management', path: '/admin/users' },
+        { icon: FolderKanban, label: 'Projects', path: '/projects' },
+        { icon: Zap, label: 'Sprints', path: '/sprints' },
+        { icon: ListChecks, label: 'Backlog', path: '/backlog' },
+        { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
+      ]
+    },
+    {
+      label: 'People',
+      items: [
+        { icon: Users, label: 'Teams', path: '/teams' },
+        { icon: Palmtree, label: 'Congés', path: '/conges' },
+      ]
+    },
+    {
+      label: 'System',
+      items: [
+        { icon: Bell, label: 'Notifications', path: '/notifications' },
+        { icon: Bot, label: 'Aura AI', path: '/aura' },
+        { icon: BarChart3, label: 'Reports', path: '/reports' },
+      ]
+    },
+  ];
+
+  const chefProjetMenu = [
+    ...common,
+    {
+      label: 'Management',
+      items: [
+        { icon: FolderKanban, label: 'Projects', path: '/projects' },
+        { icon: Zap, label: 'Sprints', path: '/sprints' },
+        { icon: ListChecks, label: 'Backlog', path: '/backlog' },
+        { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
+      ]
+    },
+    {
+      label: 'People',
+      items: [
+        { icon: Users, label: 'Teams', path: '/teams' },
+        { icon: Palmtree, label: 'Congés', path: '/conges' },
+      ]
+    },
+    {
+      label: 'System',
+      items: [
+        { icon: Bell, label: 'Notifications', path: '/notifications' },
+        { icon: Bot, label: 'Aura AI', path: '/aura' },
+        { icon: BarChart3, label: 'Reports', path: '/reports' },
+      ]
+    },
+  ];
+
+  const teamMemberMenu = [
+    ...common,
+    {
+      label: 'Work',
+      items: [
+        { icon: CheckSquare, label: 'My Tasks', path: '/tasks' },
+        { icon: Zap, label: 'My Sprints', path: '/sprints' },
+      ]
+    },
+    {
+      label: 'Personal',
+      items: [
+        { icon: Palmtree, label: 'My Congés', path: '/conges' },
+        { icon: Bell, label: 'Notifications', path: '/notifications' },
+      ]
+    },
+  ];
+
+  const clientMenu = [
+    ...common,
+    {
+      label: 'My Space',
+      items: [
+        { icon: FolderKanban, label: 'My Projects', path: '/projects' },
+        { icon: Ticket, label: 'My Tickets', path: '/tickets' },
+      ]
+    },
+    {
+      label: 'System',
+      items: [
+        { icon: Bell, label: 'Notifications', path: '/notifications' },
+        { icon: BarChart3, label: 'Reports', path: '/reports' },
+      ]
+    },
+  ];
+
+  switch (role) {
+    case 'admin': return adminMenu;
+    case 'chef_projet': return chefProjetMenu;
+    case 'team_member': return teamMemberMenu;
+    case 'client': return clientMenu;
+    default: return teamMemberMenu;
+  }
+};
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+
+  const menuItems = getMenuItems(user?.role || 'team_member');
 
   const handleLogout = () => {
     logout();

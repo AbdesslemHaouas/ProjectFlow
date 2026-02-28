@@ -1,6 +1,6 @@
-import { FolderKanban, Zap, CheckSquare, Palmtree } from 'lucide-react';
-import MainLayout from '@/components/layout/MainLayout';
 import { useAuthStore } from '@/store/auth.store';
+import { FolderKanban, Zap, Users, Palmtree } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const stats = [
   {
@@ -20,10 +20,10 @@ const stats = [
     bg: 'rgba(245, 158, 11, 0.1)',
   },
   {
-    label: 'Tasks Completed',
-    value: '142',
-    trend: '71% completion rate',
-    icon: CheckSquare,
+    label: 'Total Users',
+    value: '32',
+    trend: '5 pending approval',
+    icon: Users,
     color: '#22C55E',
     bg: 'rgba(34, 197, 94, 0.1)',
   },
@@ -37,24 +37,24 @@ const stats = [
   },
 ];
 
-const DashboardPage = () => {
+const AdminDashboard = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   return (
-    <MainLayout>
-      
+    <div>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold">
           Welcome back, {user?.prenom} 👋
         </h1>
         <p className="text-slate-400 text-sm mt-1">
-          Here's what's happening with your projects today.
+          Here's your platform overview
         </p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -77,7 +77,7 @@ const DashboardPage = () => {
 
       {/* Bottom Section */}
       <div className="grid grid-cols-2 gap-4">
-        
+
         {/* Recent Projects */}
         <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
           <h3 className="text-white font-medium mb-4">Recent Projects</h3>
@@ -118,9 +118,28 @@ const DashboardPage = () => {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4 col-span-2">
+          <h3 className="text-white font-medium mb-4">Quick Actions</h3>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/admin/users')}
+              className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-lg text-sm transition-colors"
+            >
+              👥 Manage Users
+            </button>
+            <button className="bg-[#0F0F0F] hover:bg-[#2A2A2A] text-white px-4 py-2 rounded-lg text-sm border border-[#2A2A2A] transition-colors">
+              📁 Create Project
+            </button>
+            <button className="bg-[#0F0F0F] hover:bg-[#2A2A2A] text-white px-4 py-2 rounded-lg text-sm border border-[#2A2A2A] transition-colors">
+              🌴 Review Leaves
+            </button>
+          </div>
+        </div>
+
       </div>
-    </MainLayout>
+    </div>
   );
 };
 
-export default DashboardPage;
+export default AdminDashboard;

@@ -6,6 +6,9 @@ interface User {
   prenom: string;
   email: string;
   role: string;
+  status: string;
+  isActive: boolean;
+  createdAt: string;
 }
 
 interface AuthStore {
