@@ -36,3 +36,16 @@ export const updateUserRoleApi = (id: number, role: string) =>
 
 export const deleteUserApi = (id: number) =>
   API.delete(`/users/${id}`);
+export const getMyProfileApi = () =>
+  API.get('/users/me');
+
+export const updateMyProfileApi = (data: {
+  nom?: string;
+  prenom?: string;
+  email?: string;
+}) => API.put('/users/me/profile', data);
+
+export const updateMyPasswordApi = (data: {
+  currentPassword: string;
+  newPassword: string;
+}) => API.put('/users/me/password', data);

@@ -5,6 +5,11 @@ import PendingPage from '@/pages/auth/PendingPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import UsersManagementPage from '@/pages/admin/UsersManagementPage';
 import { useAuthStore } from '@/store/auth.store';
+import NotificationsPage from '@/pages/notifications/NotificationsPage';
+import SettingsPage from '@/pages/settings/SettingsPage';
+import ProjectsPage from '@/pages/projects/ProjectsPage';
+import TasksPage from '@/pages/tasks/TasksPage';
+import SprintsPage from '@/pages/sprints/SprintsPage';
 
 // Protects any route that requires login
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -61,17 +66,19 @@ const AppRouter = () => {
         } />
 
         {/* Admin + Chef Projet routes */}
-        <Route path="/projects" element={
-          <RoleRoute allowedRoles={['admin', 'chef_projet']}>
-            <div>Projects Page Coming Soon</div>
-          </RoleRoute>
-        } />
+       
+
+<Route path="/projects" element={
+  <RoleRoute allowedRoles={['admin', 'chef_projet', 'client']}>
+    <ProjectsPage />
+  </RoleRoute>
+} />
 
         <Route path="/sprints" element={
-          <RoleRoute allowedRoles={['admin', 'chef_projet']}>
-            <div>Sprints Page Coming Soon</div>
-          </RoleRoute>
-        } />
+  <RoleRoute allowedRoles={['admin', 'chef_projet']}>
+    <SprintsPage />
+  </RoleRoute>
+} />
 
         <Route path="/backlog" element={
           <RoleRoute allowedRoles={['admin', 'chef_projet']}>
@@ -80,9 +87,16 @@ const AppRouter = () => {
         } />
 
         {/* All logged in users */}
-        <Route path="/tasks" element={
+
+<Route path="/tasks" element={
+  <ProtectedRoute>
+    <TasksPage />
+  </ProtectedRoute>
+} />
+
+        <Route path="/settings" element={
           <ProtectedRoute>
-            <div>Tasks Page Coming Soon</div>
+            <SettingsPage />
           </ProtectedRoute>
         } />
 
@@ -94,7 +108,7 @@ const AppRouter = () => {
 
         <Route path="/notifications" element={
           <ProtectedRoute>
-            <div>Notifications Page Coming Soon</div>
+            <NotificationsPage />
           </ProtectedRoute>
         } />
 
@@ -123,10 +137,11 @@ const AppRouter = () => {
             ? <Navigate to="/dashboard" />
             : <Navigate to="/login" />
         } />
+        
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/dashboard" />} />
-
+  
       </Routes>
     </BrowserRouter>
   );

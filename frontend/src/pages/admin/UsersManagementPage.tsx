@@ -1,20 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Trash2, Shield, UserCheck, UserX } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
-import { getAllUsersApi, updateUserStatusApi, updateUserRoleApi, deleteUserApi } from '@/api/auth.api';
+import { Loader2, Trash2, UserCheck, UserX } from 'lucide-react';
+import { useGetAllUsers, useUpdateUserStatus, useUpdateUserRole, useDeleteUser } from '@/features/users/api';
+import { UserRole, UserStatus } from '@/types';
 
-interface User {
-  id: number;
-  nom: string;
-  prenom: string;
-  email: string;
-  role: string;
-  status: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-const roles = ['admin', 'chef_projet', 'team_member', 'client'];
+const roles = Object.values(UserRole);
 
 const statusColors: Record<string, string> = {
   pending: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20',
@@ -23,55 +12,28 @@ const statusColors: Record<string, string> = {
 };
 
 const UsersManagementPage = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: users, isLoading, error } = useGetAllUsers();
 
-  const fetchUsers = async () => {
-    try {
-      const response = await getAllUsersApi();
-      setUsers(response.data);
-    } catch (err) {
-      setError('Failed to load users');
-    } finally {
-      setIsLoading(false);
-    }
+  const { mutate: updateStatus } = useUpdateUserStatus();
+  const { mutate: updateRole } = useUpdateUserRole();
+  const { mutate: deleteUser } = useDeleteUser();
+
+  const handleStatusChange = (id: number, status: UserStatus) => {
+    updateStatus({ id, status });
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const handleStatusChange = async (id: number, status: string) => {
-    try {
-      await updateUserStatusApi(id, status);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to update status');
-    }
+  const handleRoleChange = (id: number, role: UserRole) => {
+    updateRole({ id, role });
   };
 
-  const handleRoleChange = async (id: number, role: string) => {
-    try {
-      await updateUserRoleApi(id, role);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to update role');
-    }
-  };
-
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
-    try {
-      await deleteUserApi(id);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to delete user');
-    }
+    deleteUser(id);
   };
 
   return (
     <MainLayout>
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold">User Management</h1>
@@ -84,18 +46,18 @@ const UsersManagementPage = () => {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
           <p className="text-slate-400 text-sm">Total Users</p>
-          <p className="text-white text-2xl font-bold mt-1">{users.length}</p>
+          <p className="text-white text-2xl font-bold mt-1">{users?.length || 0}</p>
         </div>
         <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
           <p className="text-slate-400 text-sm">Pending Approval</p>
           <p className="text-yellow-400 text-2xl font-bold mt-1">
-            {users.filter(u => u.status === 'pending').length}
+            {users?.filter(u => u.status === UserStatus.PENDING).length || 0}
           </p>
         </div>
         <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
           <p className="text-slate-400 text-sm">Active Users</p>
           <p className="text-green-400 text-2xl font-bold mt-1">
-            {users.filter(u => u.status === 'active').length}
+            {users?.filter(u => u.status === UserStatus.ACTIVE).length || 0}
           </p>
         </div>
       </div>
@@ -103,7 +65,7 @@ const UsersManagementPage = () => {
       {/* Error */}
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="text-red-400 text-sm">Failed to load users</p>
         </div>
       )}
 
@@ -129,9 +91,9 @@ const UsersManagementPage = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <tr key={user.id} className="border-b border-[#2A2A2A] hover:bg-[#0F0F0F] transition-colors">
-                  
+
                   {/* User */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -154,7 +116,7 @@ const UsersManagementPage = () => {
                   <td className="px-4 py-3">
                     <select
                       value={user.role}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
                       className="bg-[#0F0F0F] border border-[#2A2A2A] rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-[#6366F1]"
                     >
                       {roles.map((role) => (
@@ -173,27 +135,27 @@ const UsersManagementPage = () => {
                   {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {user.status === 'pending' && (
+                      {user.status === UserStatus.PENDING && (
                         <button
-                          onClick={() => handleStatusChange(user.id, 'active')}
+                          onClick={() => handleStatusChange(user.id, UserStatus.ACTIVE)}
                           className="text-green-400 hover:text-green-300 transition-colors"
                           title="Activate"
                         >
                           <UserCheck className="w-4 h-4" />
                         </button>
                       )}
-                      {user.status === 'active' && (
+                      {user.status === UserStatus.ACTIVE && (
                         <button
-                          onClick={() => handleStatusChange(user.id, 'suspended')}
+                          onClick={() => handleStatusChange(user.id, UserStatus.SUSPENDED)}
                           className="text-yellow-400 hover:text-yellow-300 transition-colors"
                           title="Suspend"
                         >
                           <UserX className="w-4 h-4" />
                         </button>
                       )}
-                      {user.status === 'suspended' && (
+                      {user.status === UserStatus.SUSPENDED && (
                         <button
-                          onClick={() => handleStatusChange(user.id, 'active')}
+                          onClick={() => handleStatusChange(user.id, UserStatus.ACTIVE)}
                           className="text-green-400 hover:text-green-300 transition-colors"
                           title="Reactivate"
                         >

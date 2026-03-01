@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole, UserStatus } from './entities/user.entity';
@@ -6,6 +6,8 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -97,4 +99,37 @@ export class UsersService {
     await this.usersRepository.delete(id);
     return { message: 'User deleted successfully' };
   }
+  async updateProfile(id: number, updateProfileDto: UpdateProfileDto): Promise<User> {
+  const user = await this.findById(id);
+  
+  // Check if email is already taken by another user
+  if (updateProfileDto.email && updateProfileDto.email !== user.email) {
+    const existing = await this.usersRepository.findOne({ 
+      where: { email: updateProfileDto.email } 
+    });
+    if (existing) {
+      throw new ConflictException('Email already exists');
+    }
+  }
+
+  await this.usersRepository.update(id, updateProfileDto);
+  return this.findById(id);
+}
+
+async updatePassword(id: number, updatePasswordDto: UpdatePasswordDto): Promise<{ message: string }> {
+  const user = await this.usersRepository.findOne({ where: { id } });
+  if (!user) throw new NotFoundException('User not found');
+
+  // Check current password
+  const isValid = await bcrypt.compare(updatePasswordDto.currentPassword, user.password);
+  if (!isValid) {
+    throw new UnauthorizedException('Current password is incorrect');
+  }
+
+  // Hash new password
+  const hashed = await bcrypt.hash(updatePasswordDto.newPassword, 10);
+  await this.usersRepository.update(id, { password: hashed });
+
+  return { message: 'Password updated successfully' };
+}
 }

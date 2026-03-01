@@ -1,43 +1,32 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Lock, Mail, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { registerApi } from '@/api/auth.api';
+import { useRegister } from '@/features/auth/api';
+import { registerSchema, RegisterFormData } from '@/features/auth/schemas';
 
 const RegisterPage = () => {
-  const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    nom: '',
-    prenom: '',
-    email: '',
-    password: '',
-    role: 'team_member',
-  });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { mutate: register, isPending, error } = useRegister();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const {
+    register: registerField,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'team_member',
+    },
+  });
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    try {
-      await registerApi(formData);
-      navigate('/pending');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data: RegisterFormData) => {
+    register(data);
   };
 
   return (
@@ -59,13 +48,17 @@ const RegisterPage = () => {
           </CardHeader>
 
           <CardContent>
+
+            {/* API Error */}
             {error && (
               <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-400 text-sm">
+                  {(error as any).response?.data?.message || 'Something went wrong'}
+                </p>
               </div>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
               {/* Nom + Prenom */}
               <div className="grid grid-cols-2 gap-3">
@@ -74,25 +67,25 @@ const RegisterPage = () => {
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
                     <Input
-                      name="nom"
-                      value={formData.nom}
-                      onChange={handleChange}
                       placeholder="Haouas"
+                      {...registerField('nom')}
                       className="pl-10 bg-[#0F0F0F] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
-                      required
                     />
                   </div>
+                  {errors.nom && (
+                    <p className="text-red-400 text-xs">{errors.nom.message}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-slate-400">First name</Label>
                   <Input
-                    name="prenom"
-                    value={formData.prenom}
-                    onChange={handleChange}
                     placeholder="Abdesslem"
+                    {...registerField('prenom')}
                     className="bg-[#0F0F0F] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
-                    required
                   />
+                  {errors.prenom && (
+                    <p className="text-red-400 text-xs">{errors.prenom.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -103,14 +96,14 @@ const RegisterPage = () => {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
                   <Input
                     type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
                     placeholder="you@example.com"
+                    {...registerField('email')}
                     className="pl-10 bg-[#0F0F0F] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
-                    required
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-400 text-xs">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Password */}
@@ -120,12 +113,9 @@ const RegisterPage = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
                     placeholder="••••••••"
+                    {...registerField('password')}
                     className="pl-10 pr-10 bg-[#0F0F0F] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
-                    required
                   />
                   <button
                     type="button"
@@ -138,30 +128,34 @@ const RegisterPage = () => {
                     }
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-red-400 text-xs">{errors.password.message}</p>
+                )}
               </div>
 
               {/* Role */}
               <div className="space-y-1.5">
                 <Label className="text-slate-400">Role</Label>
                 <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
+                  {...registerField('role')}
                   className="w-full bg-[#0F0F0F] border border-[#2A2A2A] rounded-md py-2 px-3 text-white text-sm focus:outline-none focus:border-[#6366F1]"
                 >
                   <option value="team_member">Team Member</option>
                   <option value="chef_projet">Chef Projet</option>
                   <option value="client">Client</option>
                 </select>
+                {errors.role && (
+                  <p className="text-red-400 text-xs">{errors.role.message}</p>
+                )}
               </div>
 
               {/* Submit */}
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isPending}
                 className="w-full bg-[#6366F1] hover:bg-[#4F46E5] text-white mt-2"
               >
-                {isLoading ? (
+                {isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     Creating account...
@@ -176,13 +170,14 @@ const RegisterPage = () => {
             {/* Footer */}
             <p className="text-center text-slate-500 text-sm mt-6">
               Already have an account?{' '}
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="text-[#6366F1] hover:text-[#4F46E5] transition-colors"
               >
                 Sign in
-              </a>
+              </Link>
             </p>
+
           </CardContent>
         </Card>
       </div>

@@ -5,7 +5,8 @@ import {
   Delete, 
   Param, 
   Body, 
-  UseGuards 
+  UseGuards,
+  Request
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -14,6 +15,9 @@ import { Roles } from '../auth/guards/roles.decorator';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -64,4 +68,29 @@ export class UsersController {
   deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(+id);
   }
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@Request() req: any) {
+    return this.usersService.findById(req.user.id);
+  }
+
+  @Put('me/profile')
+@UseGuards(JwtAuthGuard)
+updateMyProfile(
+  @Request() req: any,
+  @Body() updateProfileDto: UpdateProfileDto
+) {
+  return this.usersService.updateProfile(req.user.id, updateProfileDto);
+}
+@Put('me/password')
+@UseGuards(JwtAuthGuard)
+updateMyPassword(
+  @Request() req: any,
+  @Body() updatePasswordDto: UpdatePasswordDto
+) {
+  return this.usersService.updatePassword(req.user.id, updatePasswordDto);
+}
+
+
+
 }
