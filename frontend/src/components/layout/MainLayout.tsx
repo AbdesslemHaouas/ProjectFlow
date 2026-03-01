@@ -1,6 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Settings, LogOut, User } from 'lucide-react';
+import { Bell, Settings, LogOut, User, Sun, Moon } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -38,6 +38,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'light' ? 'light' : 'dark';
+  });
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -57,6 +61,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = () => {
     logout();
@@ -139,6 +148,21 @@ const MainLayout = ({ children }: MainLayoutProps) => {
               )}
             </div>
 
+            <button
+              onClick={() => {
+                setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+              }}
+              className="relative w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1A1A1A] rounded-lg transition-colors"
+              aria-label="Toggle theme"
+              type="button"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </button>
+
             {/* User Avatar */}
             <div ref={userRef} className="relative">
               <button
@@ -146,9 +170,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   setShowUserMenu(!showUserMenu);
                   setShowNotifications(false);
                 }}
-                className="w-8 h-8 rounded-full bg-[#6366F1] flex items-center justify-center text-white text-xs font-medium hover:bg-[#4F46E5] transition-colors"
+                className="relative w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1A1A1A] rounded-lg transition-colors"
               >
-                {user?.nom?.charAt(0)}{user?.prenom?.charAt(0)}
+                <div className="w-8 h-8 rounded-full bg-[#6366F1] flex items-center justify-center text-white text-sm font-medium">
+                  {user?.nom?.charAt(0)}{user?.prenom?.charAt(0)}
+                </div>
               </button>
 
               {/* User Dropdown */}

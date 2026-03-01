@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { Plus, MoreHorizontal, Search } from 'lucide-react';
+import { Plus, MoreHorizontal, Search, ListChecks, Zap, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface Task {
@@ -116,6 +116,12 @@ const TasksPage = () => {
   const [search, setSearch] = useState('');
   const [dragging, setDragging] = useState<{ task: Task; from: Column } | null>(null);
 
+  const allTasks = Object.values(tasks).flat();
+  const todoCount = tasks['Todo'].length;
+  const inProgressCount = tasks['In Progress'].length;
+  const doneCount = tasks['Done'].length;
+  const highPrioOpenCount = allTasks.filter(t => t.priority === 'High').length - tasks['Done'].filter(t => t.priority === 'High').length;
+
   const handleDragStart = (task: Task, from: Column) => {
     setDragging({ task, from });
   };
@@ -140,28 +146,54 @@ const TasksPage = () => {
     <MainLayout>
 
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-white text-xl font-semibold">Tasks</h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            {Object.values(tasks).flat().length} tasks total
+            {allTasks.length} tasks total
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-lg text-sm transition-colors">
+        <button className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-xl text-sm transition-all duration-200 hover:shadow-lg hover:shadow-[#6366F1]/20">
           <Plus className="w-4 h-4" />
           New Task
         </button>
       </div>
 
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {[
+          { label: 'Todo', value: String(todoCount), color: '#94A3B8', bg: '#94A3B815', icon: ListChecks },
+          { label: 'In Progress', value: String(inProgressCount), color: '#F59E0B', bg: '#F59E0B15', icon: Zap },
+          { label: 'Done', value: String(doneCount), color: '#22C55E', bg: '#22C55E15', icon: CheckCircle },
+          { label: 'High Priority Open', value: String(Math.max(0, highPrioOpenCount)), color: '#EF4444', bg: '#EF444415', icon: AlertTriangle },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 transition-all duration-200 hover:border-[#3A3A3A]"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-slate-500 text-xs">{stat.label}</p>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.bg }}>
+                  <Icon className="w-4 h-4" style={{ color: stat.color }} />
+                </div>
+              </div>
+              <p className="text-white text-2xl font-bold tabular-nums">{stat.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
       {/* Search */}
-      <div className="mb-6">
+      <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 mb-6">
         <div className="relative max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tasks..."
-            className="pl-9 bg-[#1A1A1A] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
+            className="pl-9 bg-[#141414] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1] rounded-xl"
           />
         </div>
       </div>
@@ -173,7 +205,7 @@ const TasksPage = () => {
             key={column}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(column)}
-            className={`bg-[#1A1A1A] border rounded-xl p-3 transition-colors ${
+            className={`bg-[#1A1A1A] border rounded-2xl p-4 transition-colors ${
               dragging && dragging.from !== column
                 ? 'border-[#6366F1]/50 bg-[#6366F1]/5'
                 : 'border-[#2A2A2A]'
@@ -202,7 +234,7 @@ const TasksPage = () => {
                   key={task.id}
                   draggable
                   onDragStart={() => handleDragStart(task, column)}
-                  className="bg-[#0F0F0F] border border-[#2A2A2A] rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3A3A] transition-colors group"
+                  className="bg-[#0F0F0F] border border-[#2A2A2A] rounded-xl p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3A3A] transition-colors group"
                 >
                   {/* Task header */}
                   <div className="flex items-start justify-between mb-2">

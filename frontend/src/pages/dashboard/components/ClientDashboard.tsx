@@ -52,10 +52,10 @@ const ClientDashboard = () => {
 
       <div className="grid grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
+          <div key={stat.label} className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 transition-all duration-200 hover:border-[#3A3A3A]">
             <div className="flex items-center justify-between mb-4">
               <span className="text-slate-400 text-sm">{stat.label}</span>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.bg }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.bg }}>
                 <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
               </div>
             </div>
@@ -66,7 +66,7 @@ const ClientDashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
+        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-5">
           <h3 className="text-white font-medium mb-4">My Projects</h3>
           <div className="space-y-3">
             {[
@@ -79,7 +79,7 @@ const ClientDashboard = () => {
                   <span className="text-slate-300 text-sm">{project.name}</span>
                   <span className="text-slate-500 text-xs">{project.progress}%</span>
                 </div>
-                <div className="w-full bg-[#0F0F0F] rounded-full h-1.5">
+                <div className="w-full bg-[#141414] border border-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
                   <div
                     className="bg-[#6366F1] h-1.5 rounded-full"
                     style={{ width: `${project.progress}%` }}
@@ -90,7 +90,7 @@ const ClientDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-4">
+        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-5">
           <h3 className="text-white font-medium mb-4">Recent Updates</h3>
           <div className="space-y-3">
             {[

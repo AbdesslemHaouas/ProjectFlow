@@ -10,6 +10,11 @@ import SettingsPage from '@/pages/settings/SettingsPage';
 import ProjectsPage from '@/pages/projects/ProjectsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import SprintsPage from '@/pages/sprints/SprintsPage';
+import BacklogPage from '@/pages/backlog/BacklogPage';
+import TeamsPage from '@/pages/teams/TeamsPage';
+import CongesPage from '@/pages/conges/CongesPage';
+import AuraPage from '@/pages/aura/AuraPage';
+import ReportsPage from '@/pages/reports/ReportsPage';
 
 // Protects any route that requires login
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -80,11 +85,11 @@ const AppRouter = () => {
   </RoleRoute>
 } />
 
-        <Route path="/backlog" element={
-          <RoleRoute allowedRoles={['admin', 'chef_projet']}>
-            <div>Backlog Page Coming Soon</div>
-          </RoleRoute>
-        } />
+<Route path="/backlog" element={
+  <RoleRoute allowedRoles={['admin', 'chef_projet']}>
+    <BacklogPage />
+  </RoleRoute>
+} />
 
         {/* All logged in users */}
 
@@ -102,7 +107,7 @@ const AppRouter = () => {
 
         <Route path="/conges" element={
           <ProtectedRoute>
-            <div>Congés Page Coming Soon</div>
+              <CongesPage />
           </ProtectedRoute>
         } />
 
@@ -114,20 +119,20 @@ const AppRouter = () => {
 
         {/* Admin + Chef Projet only */}
         <Route path="/teams" element={
-          <RoleRoute allowedRoles={['admin', 'chef_projet']}>
-            <div>Teams Page Coming Soon</div>
-          </RoleRoute>
-        } />
+  <RoleRoute allowedRoles={['admin', 'chef_projet']}>
+    <TeamsPage />
+  </RoleRoute>
+} />
 
         <Route path="/aura" element={
-          <RoleRoute allowedRoles={['admin', 'chef_projet']}>
-            <div>Aura AI Page Coming Soon</div>
-          </RoleRoute>
-        } />
+  <RoleRoute allowedRoles={['admin', 'chef_projet']}>
+    <AuraPage />
+  </RoleRoute>
+} />
 
         <Route path="/reports" element={
           <RoleRoute allowedRoles={['admin', 'chef_projet', 'client']}>
-            <div>Reports Page Coming Soon</div>
+            <ReportsPage />
           </RoleRoute>
         } />
 

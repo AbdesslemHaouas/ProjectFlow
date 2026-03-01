@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { Plus, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Search, ChevronDown, ChevronUp, Calendar, Target, ListChecks, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface Task {
@@ -134,44 +134,81 @@ const SprintsPage = () => {
     <MainLayout>
 
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-white text-xl font-semibold">Sprints</h1>
           <p className="text-slate-500 text-sm mt-0.5">
             {mockSprints.filter(s => s.status === 'Active').length} active sprints
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-lg text-sm transition-colors">
+        <button className="flex items-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-xl text-sm transition-all duration-200 hover:shadow-lg hover:shadow-[#6366F1]/20">
           <Plus className="w-4 h-4" />
           New Sprint
         </button>
       </div>
 
-      {/* Search + Filters */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search sprints..."
-            className="pl-9 bg-[#1A1A1A] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1]"
-          />
-        </div>
-        <div className="flex gap-1">
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                filter === f
-                  ? 'bg-[#6366F1] text-white'
-                  : 'bg-[#1A1A1A] text-slate-400 hover:text-white border border-[#2A2A2A]'
-              }`}
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {(
+          () => {
+            const activeCount = mockSprints.filter(s => s.status === 'Active').length;
+            const plannedCount = mockSprints.filter(s => s.status === 'Planned').length;
+            const completedCount = mockSprints.filter(s => s.status === 'Completed').length;
+            const totalTasks = mockSprints.reduce((sum, s) => sum + s.tasks.length, 0);
+            return [
+              { label: 'Active Sprints', value: String(activeCount), color: '#22C55E', bg: '#22C55E15', icon: Zap },
+              { label: 'Planned', value: String(plannedCount), color: '#6366F1', bg: '#6366F115', icon: Target },
+              { label: 'Completed', value: String(completedCount), color: '#94A3B8', bg: '#94A3B815', icon: ListChecks },
+              { label: 'Tasks in Sprints', value: String(totalTasks), color: '#F59E0B', bg: '#F59E0B15', icon: ListChecks },
+            ];
+          }
+        )().map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 transition-all duration-200 hover:border-[#3A3A3A]"
             >
-              {f}
-            </button>
-          ))}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-slate-500 text-xs">{stat.label}</p>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.bg }}>
+                  <Icon className="w-4 h-4" style={{ color: stat.color }} />
+                </div>
+              </div>
+              <p className="text-white text-2xl font-bold tabular-nums">{stat.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Search + Filters */}
+      <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 mb-6">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search sprints..."
+              className="pl-9 bg-[#141414] border-[#2A2A2A] text-white placeholder:text-slate-600 focus:border-[#6366F1] rounded-xl"
+            />
+          </div>
+          <div className="flex gap-1">
+            {filters.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                  filter === f
+                    ? 'bg-[#6366F1] text-white shadow-lg shadow-[#6366F1]/20'
+                    : 'bg-[#141414] text-slate-400 hover:text-white border border-[#2A2A2A]'
+                }`}
+                type="button"
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -180,15 +217,15 @@ const SprintsPage = () => {
         {filtered.map((sprint) => (
           <div
             key={sprint.id}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl overflow-hidden"
+            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl overflow-hidden"
           >
             {/* Sprint Header */}
             <div
-              className="flex items-center gap-4 p-4 cursor-pointer hover:bg-[#0F0F0F] transition-colors"
+              className="flex items-center gap-4 p-5 cursor-pointer hover:bg-[#0F0F0F] transition-colors"
               onClick={() => toggleExpand(sprint.id)}
             >
               {/* Expand icon */}
-              <button className="text-slate-500 shrink-0">
+              <button className="text-slate-500 shrink-0" type="button">
                 {expanded.includes(sprint.id)
                   ? <ChevronUp className="w-4 h-4" />
                   : <ChevronDown className="w-4 h-4" />
@@ -215,9 +252,9 @@ const SprintsPage = () => {
                   <span className="text-slate-600 text-xs">Progress</span>
                   <span className="text-slate-400 text-xs">{sprint.progress}%</span>
                 </div>
-                <div className="w-full bg-[#0F0F0F] rounded-full h-1">
+                <div className="w-full bg-[#141414] border border-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="h-1 rounded-full"
+                    className="h-1.5 rounded-full"
                     style={{
                       width: `${sprint.progress}%`,
                       backgroundColor: progressColors[sprint.status],
@@ -228,7 +265,10 @@ const SprintsPage = () => {
 
               {/* Dates */}
               <div className="text-right shrink-0">
-                <p className="text-slate-400 text-xs">{sprint.startDate}</p>
+                <div className="flex items-center justify-end gap-1 text-slate-500 text-xs">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {sprint.startDate}
+                </div>
                 <p className="text-slate-600 text-xs">→ {sprint.endDate}</p>
               </div>
 
@@ -241,12 +281,12 @@ const SprintsPage = () => {
 
             {/* Sprint Tasks */}
             {expanded.includes(sprint.id) && (
-              <div className="border-t border-[#2A2A2A] p-4">
+              <div className="border-t border-[#2A2A2A] p-5">
                 <div className="space-y-2">
                   {sprint.tasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#0F0F0F] transition-colors group"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#0F0F0F] transition-colors group"
                     >
                       {/* Status dot */}
                       <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
@@ -281,7 +321,7 @@ const SprintsPage = () => {
                 </div>
 
                 {/* Add task button */}
-                <button className="flex items-center gap-2 text-slate-500 hover:text-white text-xs mt-3 px-3 transition-colors">
+                <button className="flex items-center gap-2 text-slate-500 hover:text-white text-xs mt-4 px-3 transition-colors" type="button">
                   <Plus className="w-3.5 h-3.5" />
                   Add task to sprint
                 </button>
