@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { Plus, X, Calendar, Clock, CheckCircle, XCircle, Palmtree, Stethoscope, Baby, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

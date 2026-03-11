@@ -1,6 +1,7 @@
 import { 
   Controller, 
   Get, 
+  Post,
   Put, 
   Delete, 
   Param, 
@@ -17,12 +18,38 @@ import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { UserRole } from './entities/user.entity';
 
+class CreateApprovedUserDto {
+  @IsString()
+  nom: string;
+
+  @IsString()
+  prenom: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+}
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Post('approved')
+  @Roles('admin')
+  createApproved(@Body() dto: CreateApprovedUserDto) {
+    return this.usersService.createApproved(dto.nom, dto.prenom, dto.email, dto.password, dto.role);
+  }
 
   @Get()
   @Roles('admin')
@@ -34,6 +61,18 @@ export class UsersController {
   @Roles('admin')
   findOne(@Param('id') id: string) {
     return this.usersService.findById(+id);
+  }
+
+  @Get(':id/permissions')
+  @Roles('admin')
+  getPermissions(@Param('id') id: string) {
+    return this.usersService.getUserPermissions(+id);
+  }
+
+  @Put(':id/permissions')
+  @Roles('admin')
+  setPermissions(@Param('id') id: string, @Body() permissions: Record<string, boolean>) {
+    return this.usersService.setUserPermissions(+id, permissions);
   }
 
   @Put(':id')
@@ -68,29 +107,34 @@ export class UsersController {
   deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(+id);
   }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getMe(@Request() req: any) {
     return this.usersService.findById(req.user.id);
   }
 
+  @Get('me/permissions')
+  @UseGuards(JwtAuthGuard)
+  getMyPermissions(@Request() req: any) {
+    return this.usersService.getUserPermissions(req.user.id);
+  }
+
   @Put('me/profile')
-@UseGuards(JwtAuthGuard)
-updateMyProfile(
-  @Request() req: any,
-  @Body() updateProfileDto: UpdateProfileDto
-) {
-  return this.usersService.updateProfile(req.user.id, updateProfileDto);
-}
-@Put('me/password')
-@UseGuards(JwtAuthGuard)
-updateMyPassword(
-  @Request() req: any,
-  @Body() updatePasswordDto: UpdatePasswordDto
-) {
-  return this.usersService.updatePassword(req.user.id, updatePasswordDto);
-}
+  @UseGuards(JwtAuthGuard)
+  updateMyProfile(
+    @Request() req: any,
+    @Body() updateProfileDto: UpdateProfileDto
+  ) {
+    return this.usersService.updateProfile(req.user.id, updateProfileDto);
+  }
 
-
-
+  @Put('me/password')
+  @UseGuards(JwtAuthGuard)
+  updateMyPassword(
+    @Request() req: any,
+    @Body() updatePasswordDto: UpdatePasswordDto
+  ) {
+    return this.usersService.updatePassword(req.user.id, updatePasswordDto);
+  }
 }

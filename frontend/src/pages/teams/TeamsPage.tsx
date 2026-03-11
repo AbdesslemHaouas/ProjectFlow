@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { Plus, Search, X, Crown, Users, Mail, Calendar, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
 interface Notification {

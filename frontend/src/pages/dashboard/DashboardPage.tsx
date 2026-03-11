@@ -1,4 +1,4 @@
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { useAuthStore } from '@/store/auth.store';
 import AdminDashboard from './components/AdminDashboard';
 import ChefProjetDashboard from './components/ChefProjetDashboard';

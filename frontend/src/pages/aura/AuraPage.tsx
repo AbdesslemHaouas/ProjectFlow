@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import {
   Bot, Send, Sparkles, TrendingUp, TrendingDown,
   AlertTriangle, CheckCircle, Brain, Zap, BarChart3,

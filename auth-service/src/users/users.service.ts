@@ -2,6 +2,7 @@ import { Injectable, ConflictException, NotFoundException, UnauthorizedException
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole, UserStatus } from './entities/user.entity';
+import { UserPermission } from './entities/user-permission.entity';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,7 +15,49 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(UserPermission)
+    private userPermissionsRepository: Repository<UserPermission>,
   ) {}
+
+  private async getPermissionsMap(userId: number): Promise<Record<string, boolean>> {
+    const rows = await this.userPermissionsRepository.find({ where: { userId } });
+    return rows.reduce<Record<string, boolean>>((acc, r) => {
+      acc[r.key] = r.enabled;
+      return acc;
+    }, {});
+  }
+
+  async getUserPermissions(userId: number): Promise<Record<string, boolean>> {
+    await this.findById(userId);
+    return this.getPermissionsMap(userId);
+  }
+
+  async setUserPermissions(userId: number, permissions: Record<string, boolean>): Promise<Record<string, boolean>> {
+    await this.findById(userId);
+
+    const keys = Object.keys(permissions);
+    const existing = keys.length
+      ? await this.userPermissionsRepository.find({ where: { userId } })
+      : [];
+
+    const existingByKey = existing.reduce<Record<string, UserPermission>>((acc, r) => {
+      acc[r.key] = r;
+      return acc;
+    }, {});
+
+    const toSave = keys.map((key) => {
+      const enabled = !!permissions[key];
+      const row = existingByKey[key] ?? this.userPermissionsRepository.create({ userId, key, enabled });
+      row.enabled = enabled;
+      return row;
+    });
+
+    if (toSave.length) {
+      await this.userPermissionsRepository.save(toSave);
+    }
+
+    return this.getPermissionsMap(userId);
+  }
 
   async create(nom: string, prenom: string, email: string, password: string, role: UserRole = UserRole.TEAM_MEMBER): Promise<User> {
     const existingUser = await this.usersRepository.findOne({ where: { email } });
@@ -29,6 +72,23 @@ export class UsersService {
       password: hashedPassword,
       role,
       status: UserStatus.PENDING,
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async createApproved(nom: string, prenom: string, email: string, password: string, role: UserRole = UserRole.TEAM_MEMBER): Promise<User> {
+    const existingUser = await this.usersRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = this.usersRepository.create({
+      nom,
+      prenom,
+      email,
+      password: hashedPassword,
+      role,
+      status: UserStatus.ACTIVE,
     });
     return this.usersRepository.save(user);
   }
